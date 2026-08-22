@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-enum UserRole {
+export enum UserRole {
   ADMIN = 'admin',
   CUSTOMER = 'customer',
   GUEST = 'guest',
@@ -23,13 +23,13 @@ export class User {
   @Column({ nullable: false })
   email!: string;
 
-  @Column({ nullable: true })
+  @Column({ default: false })
   email_verified!: boolean;
 
   @Column({ nullable: false })
   phone!: string;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, select: false })
   password!: string;
 
   @Column({
@@ -39,6 +39,18 @@ export class User {
     default: UserRole.CUSTOMER,
   })
   role!: UserRole;
+
+  @Column({
+    type: 'varchar',
+    nullable: true,
+  })
+  email_verification_token!: string | null;
+
+  @Column({
+    type: 'timestamp',
+    nullable: true,
+  })
+  email_verification_expires!: Date | null;
 
   @UpdateDateColumn()
   updated_at!: Date;

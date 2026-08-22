@@ -4,9 +4,9 @@ import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import databaseConfig from './config/database.config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { AuthService } from './api/auth/auth.service';
 import { AuthModule } from './api/auth/auth.module';
 import { UsersModule } from './api/users/users.module';
+import { MailModule } from './mail/mail.module';
 
 import pg from 'pg';
 
@@ -26,10 +26,11 @@ import pg from 'pg';
     }),
     AuthModule,
     UsersModule,
+    MailModule,
     
     // All application modules
   ],
   controllers: [AppController],
-  providers: [AppService, AuthService],
+  providers: [AppService],
 })
 export class AppModule {}
