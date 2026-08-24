@@ -1,7 +1,10 @@
+import { Account } from '../../../api/account/entities/account.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -57,4 +60,7 @@ export class User {
 
   @CreateDateColumn()
   created_at!: Date;
+
+  @OneToOne(() => Account, (account) => account.user)
+  account!: Account;
 }

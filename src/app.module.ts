@@ -7,6 +7,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { AuthModule } from './api/auth/auth.module';
 import { UsersModule } from './api/users/users.module';
 import { MailModule } from './mail/mail.module';
+import { AccountModule } from './api/account/account.module';
 
 import pg from 'pg';
 
@@ -27,6 +28,7 @@ import pg from 'pg';
     AuthModule,
     UsersModule,
     MailModule,
+    AccountModule,
     
     // All application modules
   ],
