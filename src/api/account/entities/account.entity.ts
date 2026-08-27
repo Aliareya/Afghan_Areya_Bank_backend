@@ -4,12 +4,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 import { User } from '../../users/entities/user.entity';
+import { Transaction } from '../../transactions/entities/transaction.entity';
 
 @Entity('accounts')
 export class Account {
@@ -76,4 +78,10 @@ export class Account {
 
   @UpdateDateColumn()
   updated_at!: Date;
+
+  @OneToMany(() => Transaction, (transaction) => transaction.sender)
+  sent_transactions!: Transaction[];
+
+  @OneToMany(() => Transaction, (transaction) => transaction.receiver)
+  received_transactions!: Transaction[];
 }

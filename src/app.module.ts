@@ -8,7 +8,7 @@ import { AuthModule } from './api/auth/auth.module';
 import { UsersModule } from './api/users/users.module';
 import { MailModule } from './mail/mail.module';
 import { AccountModule } from './api/account/account.module';
-
+import { TransactionsModule } from './api/transactions/transactions.module';
 import pg from 'pg';
 
 @Module({
@@ -29,7 +29,7 @@ import pg from 'pg';
     UsersModule,
     MailModule,
     AccountModule,
-    
+    TransactionsModule,
     // All application modules
   ],
   controllers: [AppController],

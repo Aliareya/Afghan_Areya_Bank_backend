@@ -37,7 +37,7 @@ export class UsersService {
       .update(verifyToken)
       .digest('hex');
 
-    const verifyTokenExpires = new Date(Date.now() + 2 * 60 * 1000);
+    const verifyTokenExpires = new Date(Date.now() + 15 * 60 * 1000);
 
     const user = this.userRepository.create({
       full_name: createUserDto.full_name,
