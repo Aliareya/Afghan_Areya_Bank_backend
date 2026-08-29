@@ -68,7 +68,10 @@ export class TransactionsService {
     // =========================
     // CARD TO CARD
     // =========================
-    if (pay_type === PayType.CARD_TO_CARD && type === TransactionType.WITHDRAW) {
+    if (
+      pay_type === PayType.CARD_TO_CARD &&
+      type === TransactionType.WITHDRAW
+    ) {
       // Sender = logged-in user's account
       const sender = await this.accountRepo.findOne({
         where: {
@@ -134,8 +137,14 @@ export class TransactionsService {
     throw new BadRequestException('Invalid transaction type or payment type');
   }
 
-  findAll() {
-    return `This action returns all transactions`;
+  async findAll() {
+    const transactions = await this.transacrionRepo.find({
+      relations: {
+        receiver: true,
+        sender: true,
+      },
+    });
+    return transactions;
   }
 
   findOne(id: number) {
@@ -148,5 +157,32 @@ export class TransactionsService {
 
   remove(id: number) {
     return `This action removes a #${id} transaction`;
+  }
+
+  async my_transaction(user_id:number) {
+    const transactions = await this.transacrionRepo.find({
+      where: [
+        {
+          receiver: {
+            user_id: user_id,
+          },
+        },
+        {
+          sender: {
+            user_id: user_id,
+          },
+        },
+      ],
+      relations:{
+        sender:{
+          user:true
+        },
+        receiver:{
+          user:true
+        }
+      }
+    });
+
+    return transactions
   }
 }

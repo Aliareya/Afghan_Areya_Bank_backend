@@ -87,6 +87,9 @@ export class AccountService {
           id: user_id,
         },
       },
+      relations:{
+        user:true
+      }
     });
 
     return accounts;

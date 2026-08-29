@@ -20,6 +20,13 @@ export class TransactionsController {
     return this.transactionsService.findAll();
   }
 
+  @Get('my_transaction')
+  @UseGuards(JwtAuthGuard)
+  mytransaction(@Req() req:any){
+    const user_id = req?.user?.sub
+    return this.transactionsService.my_transaction(user_id)
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.transactionsService.findOne(+id);
