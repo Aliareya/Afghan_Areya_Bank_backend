@@ -19,7 +19,7 @@ async function bootstrap() {
     app.enableCors({
       origin: [
         'http://localhost:5173',
-        'https://YOUR-FRONTEND.vercel.app',
+        'https://afghan-areya-bank.vercel.app/',
       ],
       credentials: true,
     });
