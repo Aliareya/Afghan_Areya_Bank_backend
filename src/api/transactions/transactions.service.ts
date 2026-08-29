@@ -159,7 +159,7 @@ export class TransactionsService {
     return `This action removes a #${id} transaction`;
   }
 
-  async my_transaction(user_id:number) {
+  async my_transaction(user_id: number) {
     const transactions = await this.transacrionRepo.find({
       where: [
         {
@@ -173,16 +173,61 @@ export class TransactionsService {
           },
         },
       ],
-      relations:{
-        sender:{
-          user:true
+      relations: {
+        sender: {
+          user: true,
         },
-        receiver:{
-          user:true
-        }
+        receiver: {
+          user: true,
+        },
+      },
+    });
+
+    return transactions;
+  }
+
+  async getdashboarddata(user_id: number) {
+    const accounts = await this.accountRepo.findOne({
+      where: {
+        user: {
+          id: user_id,
+        },
+      },
+      relations: {
+        user: true,
+      },
+    });
+
+    const transactions = await this.transacrionRepo.find({
+      where: [
+        {
+          receiver: {
+            user_id: user_id,
+          },
+        },
+        {
+          sender: {
+            user_id: user_id,
+          },
+        },
+      ],
+      relations: {
+        sender: {
+          user: true,
+        },
+        receiver: {
+          user: true,
+        },
+      },
+      take:5,
+      order:{
+        created_at:'DESC'
       }
     });
 
-    return transactions
+     return {
+      transactions,
+      accounts
+     };
   }
 }

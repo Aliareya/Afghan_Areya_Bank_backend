@@ -25,6 +25,8 @@ export class AccountController {
     return this.accountService.create(createAccountDto , user_id);
   }
 
+ 
+
   @Get('my-accounts')
   @UseGuards(JwtAuthGuard)
   async getMyAccounts(@Req() req: any) {

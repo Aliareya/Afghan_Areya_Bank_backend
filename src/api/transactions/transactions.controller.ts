@@ -20,6 +20,12 @@ export class TransactionsController {
     return this.transactionsService.findAll();
   }
 
+   @Get('dasborad')
+  @UseGuards(JwtAuthGuard)
+  dashboardData(@Req() req: any){
+     return this.transactionsService.getdashboarddata(req.user.sub);
+  }
+
   @Get('my_transaction')
   @UseGuards(JwtAuthGuard)
   mytransaction(@Req() req:any){

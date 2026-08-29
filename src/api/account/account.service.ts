@@ -95,6 +95,7 @@ export class AccountService {
     return accounts;
   }
 
+
   findAll() {
     return `This action returns all account`;
   }
