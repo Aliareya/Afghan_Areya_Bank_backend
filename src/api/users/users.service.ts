@@ -51,7 +51,7 @@ export class UsersService {
 
     const savedUser = await this.userRepository.save(user);
 
-    const verificationUrl = `http://localhost:3000/api/auth/verify-email?token=${verifyToken}`;
+    const verificationUrl = `https://afghanareyabankapi.vercel.app/api/auth/verify-email?token=${verifyToken}`;
 
     await this.mailService.sendEmail(
       user.email,
@@ -159,7 +159,7 @@ export class UsersService {
       'wellcome',
       {
         fullName: user.full_name,
-        loginUrl: 'http://localhost:5173/login',
+        loginUrl: 'https://afghan-areya-bank.vercel.app/login',
         email: user.email,
       },
     );
@@ -198,7 +198,7 @@ export class UsersService {
 
     await this.userRepository.save(user);
 
-    const verificationUrl = `http://localhost:3000/api/auth/verify-email?token=${verifyToken}`;
+    const verificationUrl = `https://afghanareyabankapi.vercel.app/api/auth/verify-email?token=${verifyToken}`;
 
     await this.mailService.sendEmail(
       user.email,

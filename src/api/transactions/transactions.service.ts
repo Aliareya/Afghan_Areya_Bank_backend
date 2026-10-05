@@ -6,6 +6,8 @@ import {
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { InjectRepository } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import {
   PayType,
   Transaction,
@@ -14,6 +16,7 @@ import {
 } from './entities/transaction.entity';
 import { Repository } from 'typeorm';
 import { Account } from '../account/entities/account.entity';
+import { SitePayDto } from './dto/site_pay.dto';
 
 @Injectable()
 export class TransactionsService {
@@ -23,6 +26,8 @@ export class TransactionsService {
 
     @InjectRepository(Account)
     private readonly accountRepo: Repository<Account>,
+
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(createTransactionDto: CreateTransactionDto, user_id: number) {
@@ -219,15 +224,147 @@ export class TransactionsService {
           user: true,
         },
       },
-      take:5,
-      order:{
-        created_at:'DESC'
-      }
+      take: 5,
+      order: {
+        created_at: 'DESC',
+      },
     });
 
-     return {
+    return {
       transactions,
-      accounts
-     };
+      accounts,
+    };
   }
+
+  async getAccountPin(accountNumber: string) {
+  const account = await this.accountRepo
+    .createQueryBuilder('account')
+    .select(['account.id', 'account.account_pin'])
+    .where('account.account_number = :accountNumber', {
+      accountNumber,
+    })
+    .getOne();
+
+  if (!account) {
+    throw new NotFoundException('Account not found');
+  }
+
+  return account.account_pin;
+}
+
+  async site_pay(sitePayDto: SitePayDto) {
+  const {
+    amount,
+    type,
+    receiver_account_number,
+    sender_account_number,
+    account_pin,
+  } = sitePayDto;
+
+  const transferAmount = Number(amount);
+
+  if (!Number.isFinite(transferAmount) || transferAmount <= 0) {
+    throw new BadRequestException('Amount must be greater than 0');
+  }
+
+  if (!sender_account_number || !receiver_account_number) {
+    throw new BadRequestException(
+      'Sender and receiver account numbers are required',
+    );
+  }
+
+  if (!account_pin) {
+    throw new BadRequestException('Account PIN is required');
+  }
+
+  if (sender_account_number === receiver_account_number) {
+    throw new BadRequestException(
+      'You cannot transfer money to your own account',
+    );
+  }
+
+  // Get hashed PIN from database
+  const hashedPin = await this.getAccountPin(sender_account_number);
+
+  // Compare plain PIN with hashed PIN
+  const isPinValid = await bcrypt.compare(
+    account_pin,
+    hashedPin,
+  );
+
+  if (!isPinValid) {
+    throw new BadRequestException('Invalid account PIN');
+  }
+
+  return await this.dataSource.transaction(async (manager) => {
+    const sender = await manager
+      .getRepository(Account)
+      .createQueryBuilder('account')
+      .where('account.account_number = :accountNumber', {
+        accountNumber: sender_account_number,
+      })
+      .setLock('pessimistic_write')
+      .getOne();
+
+    if (!sender) {
+      throw new NotFoundException('Sender account not found');
+    }
+
+    const receiver = await manager
+      .getRepository(Account)
+      .createQueryBuilder('account')
+      .where('account.account_number = :accountNumber', {
+        accountNumber: receiver_account_number,
+      })
+      .setLock('pessimistic_write')
+      .getOne();
+
+    if (!receiver) {
+      throw new NotFoundException('Receiver account not found');
+    }
+
+    const senderBalance = Number(sender.balance);
+    const receiverBalance = Number(receiver.balance);
+
+    if (!Number.isFinite(senderBalance)) {
+      throw new BadRequestException('Invalid sender balance');
+    }
+
+    if (!Number.isFinite(receiverBalance)) {
+      throw new BadRequestException('Invalid receiver balance');
+    }
+
+    if (senderBalance < transferAmount) {
+      throw new BadRequestException('Insufficient balance');
+    }
+
+    sender.balance = (senderBalance - transferAmount).toFixed(2);
+    receiver.balance = (receiverBalance + transferAmount).toFixed(2);
+
+    await manager.save(Account, sender);
+    await manager.save(Account, receiver);
+
+    const transaction = manager.create(Transaction, {
+      sender,
+      receiver,
+      type: type || TransactionType.WITHDRAW,
+      amount: transferAmount,
+      status: TransactionStatus.COMPLETED,
+      pay_type: PayType.CARD_TO_CARD,
+      description: `Transfer from ${sender_account_number} to ${receiver_account_number}`,
+    });
+
+    const savedTransaction = await manager.save(
+      Transaction,
+      transaction,
+    );
+
+    return {
+      message: 'Transaction successful',
+      transaction: savedTransaction,
+      new_sender_balance: sender.balance,
+      new_receiver_balance: receiver.balance,
+    };
+  });
+}
 }
