@@ -32,14 +32,14 @@ export class AuthController {
     try {
       await this.authService.verifyEmail(token);
 
-      return res.redirect('http://localhost:5173/email-verified');
+      return res.redirect('https://afghan-areya-bank.vercel.app/api/email-verified');
     } catch (error) {
       if (
         error instanceof ConflictException ||
         error instanceof NotFoundException
       ) {
         return res.redirect(
-          'http://localhost:5173/resend-verification?error=expired',
+          'https://afghan-areya-bank.vercel.app/api/resend-verification?error=expired',
         );
       }
 
